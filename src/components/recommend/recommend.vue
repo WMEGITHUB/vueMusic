@@ -1,5 +1,4 @@
 <template>
-  <div>
     <div v-if="recommends.length" class="silder-wrapper" ref="sliderWrapper">
       <slider>
         <div v-for="item in recommends">
@@ -9,9 +8,34 @@
         </div>
       </slider>
     </div>
-  </div>
 </template>
 <script type="text/ecmascript-6">
+  import Slider from 'base/slider/slider'
+  import {getRecommend} from 'api/recommend'
+  import {ERR_OK} from 'api/config'
+
+  export default {
+    data() {
+      return {
+        recommends: []
+      }
+    },
+    created() {
+      this._getRecommend()
+    },
+    methods: {
+      _getRecommend() {
+        getRecommend().then((res) => {
+          if (res.code === ERR_OK) {
+            this.recommends = res.data.slider
+          }
+        })
+      }
+    },
+    components: {
+      Slider
+    }
+  }
   
 </script>
 <style lang="stylus" scoped rel="stylesheet/stylus">
