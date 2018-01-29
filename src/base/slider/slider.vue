@@ -52,7 +52,7 @@
           addClass(child, 'slider-item')
 
           child.style.width = sliderWidth + 'px'
-          width += sliderWidth 
+          width += sliderWidth
         }
         if (this.loop && !isResize) {
           width += 2 * sliderWidth
@@ -77,11 +77,11 @@
           }
           this.currentPageIndex = pageIndex
 
-          if (this.autoPlay){
+          if (this.autoPlay) {
             this._play()
           }
         })
-        
+
         this.slider.on('beforeScrollStart', () => {
           if (this.autoPlay) {
             clearTimeout(this.timer)
@@ -96,7 +96,7 @@
         if (this.loop) {
           pageIndex += 1
         }
-        this.timer = setTiemout(() => {
+        this.timer = setTimeout(() => {
           this.slider.goToPage(pageIndex, 0, 400)
         }, this.interval)
       }
