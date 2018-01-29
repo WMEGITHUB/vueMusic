@@ -9,6 +9,7 @@
     </div>
   </div>
 </template>
+
 <script type="text/ecmascript-6">
   import {addClass} from 'common/js/dom'
   import BScroll from 'better-scroll'
@@ -38,8 +39,28 @@
     mounted() {
       setTimeout(() => {
         this._setSliderWidth()
+        this._initDots()
         this._initSlider()
       }, 20)
+
+      window.addEventListener('resize', () => {
+        if (!this.slider) {
+          return
+        }
+        this._setSliderWidth(true)
+        this.slider.refresh()
+      })
+    },
+    activated () {
+      if (this.autoPlay) {
+        this._play()
+      }
+    },
+    deactivated () {
+      clearTimeout(this.timer)
+    },
+    beforeDestroy () {
+      clearTimeout(this.timer)
     },
     methods: {
       _setSliderWidth(isResize) {
@@ -102,8 +123,8 @@
       }
     }
   }
-  
 </script>
+
 <style lang="stylus" scoped rel="stylesheet/stylus">
   @import '~common/stylus/variable'
 
