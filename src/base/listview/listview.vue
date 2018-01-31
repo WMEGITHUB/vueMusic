@@ -8,7 +8,7 @@
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title">{{group.title}}</h2>
         <ul>
-          <li v-for="item in group.items" class="list-group-item">
+          <li v-for="item in group.items" @click="selectItem(item)" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar">
             <span class="name">{{item.name}}</span>
           </li>
@@ -26,11 +26,15 @@
     <div class="list-fixed" ref="fixed" v-show="fixedTitle">
       <div class="fixed-title">{{fixedTitle}}</div>
     </div>
+    <div class="loading-container" v-show="!data.length">
+      <loading></loading>
+    </div>
   </scroll>
 </template>
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
   import {getData} from 'common/js/dom'
 
   const TITLE_HEIGHT = 30
@@ -70,6 +74,9 @@
       this.listHeight = []
     },
     methods: {
+      selectItem(item) {
+        this.$emit('select', item)
+      },
       onshortcutTouchStart(e) {
         let anchorIndex = getData(e.target, 'index')
         let firstTouch = e.touches[0]
@@ -152,7 +159,8 @@
       }
     },
     components: {
-      Scroll
+      Scroll,
+      Loading
     }
   }
 
@@ -166,7 +174,7 @@
     width 100%
     height 100%
     overflow hidden
-    background $color-backgroud
+    background $color-background
     .list-group
       padding-bottom 30px
       .list-group-title
