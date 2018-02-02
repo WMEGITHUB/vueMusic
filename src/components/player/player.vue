@@ -68,6 +68,9 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
+          <progress-circle :radius="radius" :percent="percent">
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -85,6 +88,7 @@
   import {playMode} from 'common/js/config'
   import ProgressBar from 'base/progress-bar/progress-bar'
   import {shuffle} from 'common/js/util'
+  import ProgressCircle from 'base/progress-circle/progress-circle'
 
   const transform = prefixStyle('transform')
 
@@ -92,7 +96,8 @@
     data () {
       return {
         songReady: false,
-        currentTime: 0
+        currentTime: 0,
+        radius: 32
       }
     },
     computed: {
@@ -104,6 +109,9 @@
       },
       iconMode() {
         return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+      },
+      miniIcon() {
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
       },
       disableCls() {
         return this.songReady ? '' : 'disable'
@@ -309,7 +317,8 @@
       }
     },
     components: {
-      ProgressBar
+      ProgressBar,
+      ProgressCircle
     }
   }
 </script>
