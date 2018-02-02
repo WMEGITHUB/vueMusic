@@ -84,6 +84,7 @@
   import {prefixStyle} from 'common/js/dom'
   import {playMode} from 'common/js/config'
   import ProgressBar from 'base/progress-bar/progress-bar'
+  import {shuffle} from 'common/js/util'
 
   const transform = prefixStyle('transform')
 
@@ -116,7 +117,8 @@
         'currentSong',
         'playing',
         'mode',
-        'currentIndex'
+        'currentIndex',
+        'sequenceList'
       ])
     },
     methods: {
@@ -167,14 +169,21 @@
         this.$refs.cdWrapper.style[transform] = ''
       },
       togglePlaying() {
-        this.setPlayingState(!this.playing)
-      },
-      changeMode() {
         if (!this.songReady) {
           return
         }
-        const mode = (this.mode + 1) % 3
-        this.setPlayMode(mode)
+        this.setPlayingState(!this.playing)
+      },
+      end() {
+        if (this.mode === playMode.loop) {
+          this.loop()
+        } else {
+          this.next()
+        }
+      },
+      loop() {
+        this.$refs.audio.currentTime = 0
+        this.$refs.audio.play()
       },
       next() {
         if (!this.songReady) {
@@ -218,17 +227,6 @@
       error() {
         this.songReady = true
       },
-      end() {
-        if (this.mode === playMode.loop) {
-          this.loop()
-        } else {
-          this.next()
-        }
-      },
-      loop() {
-        this.$refs.audio.currentTime = 0
-        this.$refs.audio.play()
-      },
       updateTime(e) {
         this.currentTime = e.target.currentTime
       },
@@ -244,6 +242,24 @@
         if (!this.playing) {
           this.togglePlaying()
         }
+      },
+      changeMode() {
+        const mode = (this.mode + 1) % 3
+        this.setPlayMode(mode)
+        let list = null
+        if (mode === playMode.random) {
+          list = shuffle(this.sequenceList)
+        } else {
+          list = this.sequenceList
+        }
+        this.resetCurrentIndex(list)
+        this.setPlayList(list)
+      },
+      resetCurrentIndex(list) {
+        let index = list.findIndex((item) => {
+          return item.id === this.currentSong.id
+        })
+        this.setCurrentIndex(index)
       },
       _pad(num, n = 2) {
         let len = num.toString().length
@@ -272,7 +288,8 @@
         'setFullScreen': 'SET_FULL_SCREEN',
         'setPlayingState': 'SET_PLAYING_STATE',
         'setPlayMode': 'SET_PLAY_MODE',
-        'setCurrentIndex': 'SET_CURRENT_INDEX'
+        'setCurrentIndex': 'SET_CURRENT_INDEX',
+        'setPlayList': 'SET_PLAYLIST'
       })
     },
     watch: {
