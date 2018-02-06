@@ -1,0 +1,58 @@
+<template>
+  <div class="search-box">
+    <i class="icon-search"></i>
+    <input type="text" v-model="query" :placeholder="placeholder" class="box"/>
+    <i class="icon-dismiss" v-show="query" @click="clear"></i>
+  </div>
+</template>
+
+<script type="text/ecmascript-6">
+  export default {
+    data () {
+      return {
+        query: ''
+      }
+    },
+    props: {
+      placeholder: {
+        type: String,
+        default: '搜索歌曲、歌手'
+      }
+    },
+    methods: {
+      clear() {
+        this.query = ''
+      }
+    }
+  }
+</script>
+
+<style lang="stylus" scoped rel="stylesheet/stylus">
+  @import "~common/stylus/variable"
+
+  .search-box
+    display flex
+    align-items center
+    box-sizing border-box
+    width 100%
+    padding 0px 6px
+    height 40px
+    background $color-highlight-background
+    border-radius 6px
+    .icon-search
+      font-size 24px
+      color $color-background
+    .box
+      flex 1
+      margin 0px 5px
+      line-height 18px
+      background $color-highlight-background
+      color $color-text
+      font-size $font-size-medium
+      &::placeholder
+        color $color-text-d
+    .icon-dismiss
+      font-size 1px
+      color $color-background
+</style>
+
