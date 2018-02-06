@@ -9,7 +9,7 @@ export function getSingerList() {
     page: 'list',
     key: 'all_all_all',
     pagesize: 100,
-    pagenum: 1,
+    pagenum: 2,
     hostUin: 0,
     needNewCode: 0,
     platform: 'yqq'
