@@ -1,51 +1,56 @@
 <template>
   <transition name="slide">
-    <music-list :title="title" :bg-image="bgImage" :songs="songs"></music-list>
+    <music-list :rank="rank" :title="title" :bg-image="bgImage" :songs="songs"></music-list>
   </transition>
 </template>
 
 <script type="text/ecmascript-6">
   import MusicList from 'components/music-list/music-list'
-  import {getSongList} from 'api/recommend'
-  import {mapGetters} from 'vuex'
+  import {getMusicList} from 'api/rank'
   import {ERR_OK} from 'api/config'
+  import {mapGetters} from 'vuex'
   import {createSong} from 'common/js/song'
 
   export default {
-    data() {
-      return {
-        songs: []
-      }
-    },
     computed: {
       title() {
-        return this.disc.dissname
+        return this.topList.topTitle
       },
       bgImage() {
-        return this.disc.imgurl
+        if (this.songs.length) {
+          return this.songs[0].image
+        }
+        return ''
       },
       ...mapGetters([
-        'disc'
+        'topList'
       ])
     },
+    data () {
+      return {
+        songs: [],
+        rank: true
+      }
+    },
     created () {
-      this._getSongList()
+      this._getMusicList()
     },
     methods: {
-      _getSongList() {
-        if (!this.disc.dissid) {
-          this.$router.push('/recommend')
-          return
-        }
-        getSongList(this.disc.dissid).then((res) => {
+      _getMusicList() {
+        getMusicList(this.topList.id).then((res) => {
+          if (!this.topList.id) {
+            this.$router.push('/rank')
+            return
+          }
           if (res.code === ERR_OK) {
-            this.songs = this._normalizeSongs(res.cdlist[0].songlist)
+            this.songs = this._normalizeSongs(res.songlist)
           }
         })
       },
       _normalizeSongs(list) {
         let ret = []
-        list.forEach((musicData) => {
+        list.forEach((item) => {
+          const musicData = item.data
           if (musicData.songid && musicData.albummid) {
             ret.push(createSong(musicData))
           }
@@ -61,7 +66,8 @@
 
 <style lang="stylus" scoped rel="stylesheet/stylus">
   .slide-enter-active, .slide-leave-active
-    transition all 0.3s
+    transition all 0.3s ease
   .slide-enter, .slide-leave-to
     transform translate3d(100%, 0, 0)
 </style>
+
