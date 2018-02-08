@@ -7,7 +7,7 @@
           @beoreScroll="listScroll"
   >
     <ul class="suggest-list">
-      <li class="suggest-item" v-for="item in result">
+      <li class="suggest-item" v-for="item in result" @click="selectItem(item)">
         <div class="icon">
           <i :class="getIconCls(item)"></i>
         </div>
@@ -30,6 +30,8 @@
   import Scroll from 'base/scroll/scroll'
   import Loading from 'base/loading/loading'
   import NoResult from 'base/no-result/no-result'
+  import Singer from 'common/js/singer'
+  import {mapActions, mapMutations} from 'vuex'
 
   const perpage = 20
   const TYPE_SINGER = 'singer'
@@ -80,6 +82,21 @@
       listScroll() {
         this.$emit('listScroll')
       },
+      selectItem(item) {
+        if (item.type === TYPE_SINGER) {
+          const singer = new Singer({
+            id: item.singermid,
+            name: item.singername
+          })
+          this.$router.push({
+            path: `/search/${singer.id}`
+          })
+          this.setSinger(singer)
+        } else {
+          this.insertSong(item)
+        }
+        this.$emit('select', item)
+      },
       getDisplayName(item) {
         if (item.type === TYPE_SINGER) {
           return item.singername
@@ -118,7 +135,13 @@
         if (!song.list.length || (song.curnum + song.curpage * perpage) > song.totalnum) {
           this.hasMore = false
         }
-      }
+      },
+      ...mapActions([
+        'insertSong'
+      ]),
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      })
     },
     watch: {
       query(newQuery) {
