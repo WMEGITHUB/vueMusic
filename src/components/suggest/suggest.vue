@@ -1,5 +1,11 @@
 <template>
-  <div class="suggest">
+  <scroll class="suggest" 
+          :data="result"
+          :pullup="pullup"
+          :beforeScroll="beforeScroll"
+          @scrollToEnd="searchMore"
+          @beoreScroll="listScroll"
+  >
     <ul class="suggest-list">
       <li class="suggest-item" v-for="item in result">
         <div class="icon">
@@ -9,14 +15,21 @@
           <p class="text" v-html="getDisplayName(item)"></p>
         </div>
       </li>
+      <loading v-show="hasMore" title=""></loading>
     </ul>
-  </div>
+    <div class="no-result-wrapper" v-show="!hasMore && !result.length">
+      <no-result title="抱歉，暂无搜索结果"></no-result>
+    </div>
+  </scroll>
 </template>
 
 <script type="text/ecmascript-6">
   import {search} from 'api/search'
   import {ERR_OK} from 'api/config'
   import {createSong} from 'common/js/song'
+  import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
+  import NoResult from 'base/no-result/no-result'
 
   const perpage = 20
   const TYPE_SINGER = 'singer'
@@ -35,18 +48,37 @@
     data () {
       return {
         page: 1,
-        result: []
+        result: [],
+        pullup: true,
+        beforeScroll: true,
+        hasMore: true
       }
     },
     methods: {
       search() {
         this.page = 1
+        this.hasMore = true
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          if (res.code === ERR_OK) {
+            this.result = this._genResult(res.data)
+            this._checkMore(res.data)
+          }
+        })
+      },
+      searchMore() {
+        if (!this.hasMore) {
+          return
+        }
+        this.page++
         search(this.query, this.page, this.showSinger, perpage).then((res) => {
           if (res.code === ERR_OK) {
             this.result = this.result.concat(this._genResult(res.data))
-            console.log(this.result)
+            this._checkMore(res.data)
           }
         })
+      },
+      listScroll() {
+        this.$emit('listScroll')
       },
       getDisplayName(item) {
         if (item.type === TYPE_SINGER) {
@@ -80,12 +112,23 @@
           }
         })
         return ret
+      },
+      _checkMore(data) {
+        const song = data.song
+        if (!song.list.length || (song.curnum + song.curpage * perpage) > song.totalnum) {
+          this.hasMore = false
+        }
       }
     },
     watch: {
       query(newQuery) {
         this.search(newQuery)
       }
+    },
+    components: {
+      Scroll,
+      Loading,
+      NoResult
     }
   }
 </script>
