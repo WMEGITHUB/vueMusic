@@ -5,6 +5,7 @@
           :beforeScroll="beforeScroll"
           @scrollToEnd="searchMore"
           @beoreScroll="listScroll"
+          ref="suggest"
   >
     <ul class="suggest-list">
       <li class="suggest-item" v-for="item in result" @click="selectItem(item)">
@@ -60,6 +61,7 @@
       search() {
         this.page = 1
         this.hasMore = true
+        this.$refs.suggest.scrollTo(0, 0)
         search(this.query, this.page, this.showSinger, perpage).then((res) => {
           if (res.code === ERR_OK) {
             this.result = this._genResult(res.data)
@@ -96,6 +98,9 @@
           this.insertSong(item)
         }
         this.$emit('select', item)
+      },
+      refresh() {
+        this.$refs.suggest.refresh()
       },
       getDisplayName(item) {
         if (item.type === TYPE_SINGER) {
