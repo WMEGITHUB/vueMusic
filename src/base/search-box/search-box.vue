@@ -7,6 +7,8 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import {debounce} from 'common/js/util'
+
   export default {
     data () {
       return {
@@ -26,6 +28,11 @@
       setQuery(query) {
         this.query = query
       }
+    },
+    created () {
+      this.$watch('query', debounce((newQuery) => {
+        this.$emit('query', newQuery)
+      }, 200))
     }
   }
 </script>
