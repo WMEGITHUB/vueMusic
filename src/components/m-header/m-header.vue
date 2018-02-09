@@ -2,6 +2,9 @@
   <div class="m-header">
     <div class="icon"></div>
     <h1 class="text">Chicken Music</h1>
+    <router-link tag="div" to="/user" class="mine">
+      <i class="icon-mine"></i>
+    </router-link>
   </div>
 </template>
 <script type="text/ecmascript-6">
