@@ -101,7 +101,7 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import {mapGetters, mapMutations} from 'vuex'
+  import {mapGetters, mapMutations, mapActions} from 'vuex'
   import Scroll from 'base/scroll/scroll'
   import animations from 'create-keyframe-animation'
   import {prefixStyle} from 'common/js/dom'
@@ -261,6 +261,7 @@
       },
       ready() {
         this.songReady = true
+        this.savePlayHistory(this.currentSong)
       },
       error() {
         this.songReady = true
@@ -395,7 +396,10 @@
       },
       ...mapMutations({
         'setFullScreen': 'SET_FULL_SCREEN'
-      })
+      }),
+      ...mapActions([
+        'savePlayHistory'
+      ])
     },
     watch: {
       currentSong(newSong, oldSong) {
