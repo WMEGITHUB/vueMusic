@@ -240,7 +240,6 @@
             this.togglePlaying()
           }
         }
-        this.songReady = false
       },
       prev() {
         if (!this.songReady) {
@@ -259,11 +258,15 @@
             this.togglePlaying()
           }
         }
-        this.songReady = false
       },
       ready() {
         this.songReady = true
         this.savePlayHistory(this.currentSong)
+        // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
+        if (this.currentLyric) {
+          const currentTime = this.currentSong.duration * this.percent * 1000
+          this.currentLyric.seek(currentTime)
+        }
       },
       error() {
         this.songReady = true
@@ -293,8 +296,10 @@
             return
           }
           this.currentLyric = new Lyric(lyric, this.handlLyric)
-          if (this.playing) {
-            this.currentLyric.play()
+          if (this.playing && this.songReady) {
+            // 有时候可能用户已经播放了歌曲，要切换到对应位置去
+            const currentTime = this.currentSong.duration * this.percent * 1000
+            this.currentLyric.seek(currentTime)
           }
         }).catch(() => {
           this.currentLyric = null
@@ -414,8 +419,11 @@
         if (newSong.id === oldSong.id) {
           return
         }
+        this.songReady = false
         if (this.currentLyric) {
           this.currentLyric.stop()
+          // 重置为null
+          this.currentLyric = null
           this.currentTime = 0
           this.playingLyric = ''
           this.currentLineNum = 0
@@ -427,6 +435,9 @@
         }, 1000)
       },
       playing(newPlaying) {
+        if (!this.songReady) {
+          return
+        }
         const audio = this.$refs.audio
         this.$nextTick(() => {
           newPlaying ? audio.play() : audio.pause()

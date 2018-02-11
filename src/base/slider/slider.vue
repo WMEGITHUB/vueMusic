@@ -179,6 +179,7 @@
       bottom 12px
       text-align center
       font-size 0
+      transform translateZ(1px)
       .dot
         display inline-block
         margin 0px 4px
