@@ -24,8 +24,8 @@
         >
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd" :class="cdCls">
-                <img class="image" :src="currentSong.image">
+              <div class="cd" ref="imageWrapper">
+                <img ref="image" :class="cdCls" class="image" :src="currentSong.image">
               </div>
             </div>
             <div class="playing-lyric-wrapper">
@@ -54,7 +54,7 @@
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar :percent="percent" @percentChange="onProgressBarChange"
+              <progress-bar ref="progressBar" :percent="percent" @percentChange="onProgressBarChange"
                             @percentChanging="onProgressBarChanging"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
@@ -67,7 +67,7 @@
               <i class="icon-prev" @click="prev"></i>
             </div>
             <div class="icon i-center" :class="disableCls">
-              <i :class="playIcon" @click="togglePlaying"></i>
+              <i class="needsclick" :class="playIcon" @click="togglePlaying"></i>
             </div>
             <div class="icon i-right" :class="disableCls">
               <i class="icon-next" @click="next"></i>
@@ -82,7 +82,9 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img :class="cdCls" width="40" height="40" :src="currentSong.image">
+          <div class="imgWrapper" ref="miniWrapper">
+            <img ref="miniImage" :class="cdCls" width="40" height="40" :src="currentSong.image">
+          </div>
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
@@ -100,7 +102,7 @@
     </transition>
     <playlist ref="playlist"></playlist>
     <audio :src="currentSong.url" ref="audio" @play="ready" @error="error" @ended="end" 
-           @timeupdate="updateTime"></audio>
+           @timeupdate="updateTime"  @pause="paused"></audio>
   </div>
 </template>
 
@@ -138,7 +140,7 @@
     },
     computed: {
       cdCls() {
-        return this.playing ? 'play' : 'play pause'
+        return this.playing ? 'play' : ''
       },
       playIcon() {
         return this.playing ? 'icon-pause' : 'icon-play'
@@ -202,7 +204,11 @@
         this.$refs.cdWrapper.style.transition = 'all 0.4s'
         const {x, y, scale} = this._getPosAndScale()
         this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`
-        this.$refs.cdWrapper.addEventListener('transitionend', done)
+        const timer = setTimeout(done, 400)
+        this.$refs.cdWrapper.addEventListener('transitionend', () => {
+          clearTimeout(timer)
+          done()
+        })
       },
       afterLeave() {
         this.$refs.cdWrapper.style.transition = ''
@@ -274,6 +280,12 @@
         // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
         if (this.currentLyric && !this.isPureMusic) {
           this.currentLyric.seek(this.currentTime * 1000)
+        }
+      },
+      paused() {
+        this.setPlayingState(false)
+        if (this.currentLyric) {
+          this.currentLyric.stop()
         }
       },
       error() {
@@ -423,6 +435,21 @@
           scale
         }
       },
+       /**
+        * 计算内层Image的transform，并同步到外层容器
+        * @param wrapper
+        * @param inner
+        */
+      syncWrapperTransform (wrapper, inner) {
+        if (!this.$refs[wrapper]) {
+          return
+        }
+        let imageWrapper = this.$refs[wrapper]
+        let image = this.$refs[inner]
+        let wTransform = getComputedStyle(imageWrapper)[transform]
+        let iTransform = getComputedStyle(image)[transform]
+        imageWrapper.style[transform] = wTransform === 'none' ? iTransform : iTransform.concat(' ', wTransform)
+      },
       ...mapMutations({
         'setFullScreen': 'SET_FULL_SCREEN'
       }),
@@ -461,11 +488,19 @@
         this.$nextTick(() => {
           newPlaying ? audio.play() : audio.pause()
         })
+        if (!newPlaying) {
+          if (this.fullScreen) {
+            this.syncWrapperTransform('imageWrapper', 'image')
+          } else {
+            this.syncWrapperTransform('miniWrapper', 'miniImage')
+          }
+        }
       },
       fullScreen(newVal) {
         if (newVal) {
           setTimeout(() => {
             this.$refs.lyricList.refresh()
+            this.$refs.progressBar.setProgressOffset(this.percent)
           }, 20)
         }
       }
@@ -548,16 +583,11 @@
             top: 0
             width: 80%
             height: 100%
+            box-sizing border-box
             .cd
               width: 100%
               height: 100%
-              box-sizing: border-box
-              border: 10px solid rgba(255, 255, 255, 0.1)
               border-radius: 50%
-              &.play
-                animation: rotate 20s linear infinite
-              &.pause
-                animation-play-state: paused
               .image
                 position: absolute
                 left: 0
@@ -565,6 +595,10 @@
                 width: 100%
                 height: 100%
                 border-radius: 50%
+                box-sizing border-box
+                border: 10px solid rgba(255, 255, 255, 0.1)
+                .play
+                  animation: rotate 20s linear infinite
 
           .playing-lyric-wrapper
             width: 80%
@@ -683,13 +717,17 @@
       .icon
         flex: 0 0 40px
         width: 40px
+        height 40px
         padding: 0 10px 0 20px
-        img
-          border-radius: 50%
-          &.play
-            animation: rotate 10s linear infinite
-          &.pause
-            animation-play-state: paused
+        .imgWrapper
+          height: 100%
+          width: 100%
+          img
+            border-radius: 50%
+            &.play
+              animation: rotate 10s linear infinite
+            &.pause
+              animation-play-state: paused
       .text
         display: flex
         flex-direction: column

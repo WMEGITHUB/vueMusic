@@ -150,6 +150,9 @@
     },
     watch: {
       query(newQuery) {
+        if (!newQuery) {
+          return
+        }
         this.search(newQuery)
       }
     },

@@ -14,7 +14,7 @@
             <li :key="item.id" class="item" v-for="(item, index) in sequenceList" 
             @click="selectItem(item, index)">
               <i class="current" :class="getCurrentIcon(item)"></i>
-              <span class="text">{{item.name}}</span>
+              <span class="text" v-html="item.name"></span>
               <span class="like" @click.stop="toggleFavorite(item)">
                 <i :class="getFavoriteIcon(item)"></i>
               </span>
@@ -94,10 +94,17 @@
         this.$refs.listContent.scrollToElement(this.$refs.list.$el.children[index], 300)
       },
       deleteOne(item) {
+        if (item.deleting) {
+          return
+        }
+        item.deleting = true
         this.deleteSong(item)
         if (!this.playlist.length) {
           this.hide()
         }
+        setTimeout(() => {
+          item.deleting = false
+        }, 300)
       },
       showConfirm() {
         this.$refs.confirm.show()
