@@ -51,9 +51,17 @@
         if (!this.slider) {
           return
         }
-        setTimeout(() => {
+        clearTimeout(this.resizeTimer)
+        this.resizeTimer = setTimeout(() => {
+          if (this.slider.isInTransition) {
+            this._onScrollEnd()
+          } else {
+            if (this.autoPlay) {
+              this._play()
+            }
+          }
           this.refresh()
-        }, 20)
+        }, 60)
       })
     },
     activated () {
@@ -100,13 +108,9 @@
           snapSpeed: 400
         })
 
-        this.slider.on('scrollEnd', () => {
-          let pageIndex = this.slider.getCurrentPage().pageX
-          if (this.loop) {
-            pageIndex -= 1
-          }
-          this.currentPageIndex = pageIndex
+        this.slider.on('scrollEnd', this._onScrollEnd)
 
+        this.slider.on('touchend', () => {
           if (this.autoPlay) {
             this._play()
           }
@@ -118,6 +122,17 @@
           }
         })
       },
+      _onScrollEnd() {
+        let pageIndex = this.slider.getCurrentPage().pageX
+        if (this.loop) {
+          pageIndex = 1
+        }
+        this.currentPageIndex = pageIndex
+
+        if (this.autoPlay) {
+          this._play()
+        }
+      },
       _initDots() {
         this.dots = new Array(this.children.length)
       },
@@ -126,6 +141,7 @@
         if (this.loop) {
           pageIndex += 1
         }
+        clearTimeout(this.timer)
         this.timer = setTimeout(() => {
           this.slider.goToPage(pageIndex, 0, 400)
         }, this.interval)
