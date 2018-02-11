@@ -10,8 +10,8 @@
           </h1>
         </div>
         <scroll ref="listContent" :refreshDelay="refreshDelay" :data="sequenceList" class="list-content">
-          <transition-group name="list" tag="ul">
-            <li :key="item.id" ref="listItem" class="item" v-for="(item, index) in sequenceList" 
+          <transition-group name="list" tag="ul" ref="list">
+            <li :key="item.id" class="item" v-for="(item, index) in sequenceList" 
             @click="selectItem(item, index)">
               <i class="current" :class="getCurrentIcon(item)"></i>
               <span class="text">{{item.name}}</span>
@@ -91,7 +91,7 @@
         const index = this.sequenceList.findIndex((song) => {
           return current.id === song.id
         })
-        this.$refs.listContent.scrollToElement(this.$refs.listItem[index], 300)
+        this.$refs.listContent.scrollToElement(this.$refs.list.$el.children[index], 300)
       },
       deleteOne(item) {
         this.deleteSong(item)
@@ -119,7 +119,9 @@
         if (!this.showFlag || newSong.id === oldSong.id) {
           return
         }
-        this.scrollToCurrent(newSong)
+        setTimeout(() => {
+          this.scrollToCurrent(newSong)
+        }, 20)
       }
     },
     components: {
