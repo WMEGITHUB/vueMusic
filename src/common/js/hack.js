@@ -1,6 +1,6 @@
 // hack for global nextTick
 
-function noop () {
+function noop() {
 
 }
 

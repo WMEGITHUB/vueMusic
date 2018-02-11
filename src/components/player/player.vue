@@ -101,22 +101,22 @@
       </div>
     </transition>
     <playlist ref="playlist"></playlist>
-    <audio :src="currentSong.url" ref="audio" @play="ready" @error="error" @ended="end" 
+    <audio ref="audio" @play="ready" @error="error" @ended="end" 
            @timeupdate="updateTime"  @pause="paused"></audio>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
-  import {mapGetters, mapMutations, mapActions} from 'vuex'
+  import { mapGetters, mapMutations, mapActions } from 'vuex'
   import Scroll from 'base/scroll/scroll'
   import animations from 'create-keyframe-animation'
-  import {prefixStyle} from 'common/js/dom'
-  import {playMode} from 'common/js/config'
+  import { prefixStyle } from 'common/js/dom'
+  import { playMode } from 'common/js/config'
   import ProgressBar from 'base/progress-bar/progress-bar'
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import Lyric from 'lyric-parser'
   import Playlist from 'components/playlist/playlist'
-  import {playerMixin} from 'common/js/mixin'
+  import { playerMixin } from 'common/js/mixin'
 
   const transform = prefixStyle('transform')
   const transitionDuration = prefixStyle('transitionDuration')
@@ -275,7 +275,10 @@
         }
       },
       ready() {
-        this.songReady = true
+        // 延时避免快速切歌导致 dom 报错
+        setTimeout(() => {
+          this.songReady = true
+        }, 500)
         this.savePlayHistory(this.currentSong)
         // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
         if (this.currentLyric && !this.isPureMusic) {
@@ -324,7 +327,7 @@
             this.pureMusicLyric = this.currentLyric.lrc.replace(timeExp, '').trim()
             this.playingLyric = this.pureMusicLyric
           } else {
-            if (this.playing && this.songReady) {
+            if (this.playing) {
               // 有时候可能用户已经播放了歌曲，要切换到对应位置去
               this.currentLyric.seek(this.currentTime * 1000)
             }
@@ -459,10 +462,7 @@
     },
     watch: {
       currentSong(newSong, oldSong) {
-        if (!newSong.id) {
-          return
-        }
-        if (newSong.id === oldSong.id) {
+        if (!newSong.id || !newSong.url || newSong.id === oldSong.id) {
           return
         }
         this.songReady = false
@@ -474,11 +474,9 @@
           this.playingLyric = ''
           this.currentLineNum = 0
         }
-        clearTimeout(this.timer)
-        this.timer = setTimeout(() => {
-          this.$refs.audio.play()
-          this.getLyric()
-        }, 1000)
+        this.$refs.audio.src = newSong.url
+        this.$refs.audio.play()
+        this.getLyric()
       },
       playing(newPlaying) {
         if (!this.songReady) {
