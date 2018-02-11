@@ -51,8 +51,9 @@
         if (!this.slider) {
           return
         }
-        this._setSliderWidth(true)
-        this.slider.refresh()
+        setTimeout(() => {
+          this.refresh()
+        }, 20)
       })
     },
     activated () {
@@ -67,6 +68,10 @@
       clearTimeout(this.timer)
     },
     methods: {
+      refresh() {
+        this._setSliderWidth(true)
+        this.slider.refresh()
+      },
       _setSliderWidth(isResize) {
         this.children = this.$refs.sliderGroup.children
 

@@ -3,7 +3,7 @@
       <scroll ref="scroll" class="recommend-content" :data="discList">
         <div>
           <div v-if="recommends.length" class="slider-wrapper" ref="sliderWrapper">
-            <slider>
+            <slider ref="slider">
               <div v-for="item in recommends">
                 <a :href="item.linkUrl">
                   <img class="needsclick" @load="loadImage" :src="item.picUrl">
@@ -55,6 +55,11 @@ export default {
     this._getRecommend()
 
     this._getDiscList()
+  },
+  activated () {
+    setTimeout(() => {
+      this.$refs.slider && this.$refs.slider.refresh()
+    }, 20)
   },
   methods: {
     handlePlaylist(playlist) {
