@@ -57,7 +57,7 @@ apiRoutes.get('/lyric', function (req, res) {
   }).then((respone) => {
     var ret = respone.data
     if (typeof ret === 'string') {
-      var reg = /^\w+\(({[^()]+})\)$/
+      var reg = /^\w+\(({.+})\)$/
       var matches = ret.match(reg)
       if (matches) {
         ret = JSON.parse(matches[1])
