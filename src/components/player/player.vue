@@ -40,6 +40,9 @@
                               ref="lyricLine"
                               :class="{'current': currentLineNum === index}">{{line.txt}}</p>
               </div>
+              <div class="pure-music" v-show="isPureMusic">
+                <p>{{pureMusicLyric}}</p>
+              </div>
             </div>
           </scroll>
         </div>
@@ -115,6 +118,8 @@
   const transform = prefixStyle('transform')
   const transitionDuration = prefixStyle('transitionDuration')
 
+  const timeExp = /\[(\d{2}):(\d{2}):(\d{2})]/g
+
   export default {
     mixins: [playerMixin],
     data () {
@@ -125,7 +130,9 @@
         currentLyric: null,
         currentLineNum: 0,
         playingLyric: '',
-        currentShow: 'cd'
+        currentShow: 'cd',
+        isPureMusic: false,
+        pureMusicLyric: ''
       }
     },
     computed: {
@@ -210,6 +217,7 @@
         }
       },
       end() {
+        this.currentTime = 0
         if (this.mode === playMode.loop) {
           this.loop()
         } else {
@@ -263,9 +271,8 @@
         this.songReady = true
         this.savePlayHistory(this.currentSong)
         // 如果歌曲的播放晚于歌词的出现，播放的时候需要同步歌词
-        if (this.currentLyric) {
-          const currentTime = this.currentSong.duration * this.percent * 1000
-          this.currentLyric.seek(currentTime)
+        if (this.currentLyric && !this.isPureMusic) {
+          this.currentLyric.seek(this.currentTime * 1000)
         }
       },
       error() {
@@ -296,10 +303,15 @@
             return
           }
           this.currentLyric = new Lyric(lyric, this.handlLyric)
-          if (this.playing && this.songReady) {
-            // 有时候可能用户已经播放了歌曲，要切换到对应位置去
-            const currentTime = this.currentSong.duration * this.percent * 1000
-            this.currentLyric.seek(currentTime)
+          this.isPureMusic = !this.currentLyric.lines.length
+          if (this.isPureMusic) {
+            this.pureMusicLyric = this.currentLyric.lrc.replace(timeExp, '').trim()
+            this.playingLyric = this.pureMusicLyric
+          } else {
+            if (this.playing && this.songReady) {
+              // 有时候可能用户已经播放了歌曲，要切换到对应位置去
+              this.currentLyric.seek(this.currentTime * 1000)
+            }
           }
         }).catch(() => {
           this.currentLyric = null
@@ -308,6 +320,9 @@
         })
       },
       handlLyric({lineNum, txt}) {
+        if (!this.$refs.lyricLine) {
+          return
+        }
         this.currentLineNum = lineNum
         if (lineNum > 5) {
           let lineEl = this.$refs.lyricLine[lineNum - 5]
@@ -574,6 +589,11 @@
               font-size: $font-size-medium
               &.current
                 color: $color-text
+            .pure-music
+              padding-top 50%
+              line-height 32px
+              color $color-text-l
+              font-size $font-size-medium
       .bottom
         position: absolute
         bottom: 50px
