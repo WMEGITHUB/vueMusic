@@ -31,6 +31,9 @@ export const playerMixin = {
     iconMode() {
       return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
     },
+    favoriteIcon () {
+      return this.getFavoriteIcon(this.currentSong)
+    },
     ...mapGetters([
       'sequenceList',
       'playlist',
