@@ -39,11 +39,18 @@
         this.setSinger(singer)
       },
       _getSingerList() {
-        getSingerList().then((res) => {
-          if (res.code === ERR_OK) {
-            this.singers = this._normalizeSinger(res.data.list)
-          }
-        })
+        let singsArr = []
+        for (let pagenum = 1; pagenum < 13; pagenum++) {
+          getSingerList(pagenum).then((res) => {
+            if (res.code === ERR_OK) {
+              // this.singers = this._normalizeSinger(res.data.list)
+              singsArr = singsArr.concat(res.data.list)
+              if (pagenum === 12) {
+                this.singers = this._normalizeSinger(singsArr)
+              }
+            }
+          })
+        }
       },
       _normalizeSinger(list) {
         let map = {
