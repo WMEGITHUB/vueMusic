@@ -3,6 +3,8 @@ import {getUid} from 'common/js/uid'
 import jsonp from 'common/js/jsonp'
 import axios from 'axios'
 
+const debug = process.env.NODE_ENV !== 'production'
+
 export function getVKey(songmid, filename) {
   const url = 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg'
 
@@ -24,7 +26,7 @@ export function getVKey(songmid, filename) {
 }
 
 export function getLyric(mid) {
-  const url = 'api/lyric'
+  const url = debug ? 'api/lyric' : 'http://wsaiyu.top/music/api/lyric'
 
   const data = Object.assign({}, commonParams, {
     songmid: mid,
