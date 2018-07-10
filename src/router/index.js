@@ -11,7 +11,7 @@ const TopList = () => import('components/top-list/top-list')
 const UserCenter = () => import('components/user-center/user-center')
 
 Vue.use(Router)
-
+console.log(1)
 export default new Router({
   routes: [
     {
