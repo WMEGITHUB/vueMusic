@@ -153,6 +153,7 @@
         if (!newQuery) {
           return
         }
+        this.result = []
         this.search(newQuery)
       }
     },
