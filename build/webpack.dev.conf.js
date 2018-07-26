@@ -61,7 +61,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         const url = 'https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp'
         axios.get(url, {
           headers: {
-            referer: 'https://y.qq.com/m/index.html'
+            referer: 'https://c.y.qq.com/',
+            host: 'c.y.qq.com'
           },
           params: req.query
         }).then((response) => {

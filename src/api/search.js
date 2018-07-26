@@ -31,7 +31,8 @@ export function search(query, page, zhida, perpage) {
     remoteplace: 'txt.mqq.all',
     uin: 0,
     needNewCode: 1,
-    platform: 'h5'
+    platform: 'h5',
+    format: 'json'
   })
 
   return axios.get(url, {
